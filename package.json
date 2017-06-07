@@ -16,14 +16,14 @@
   },
   "devDependencies": {
     "eslint": "^3.15.0",
-    "sinon": "^1.17.7",
     "stormer-memcached": "0.0.3",
-    "tape": "^4.6.3"
+    "tape": "^4.6.3",
+    "tape-nock": "^1.6.0"
   },
   "dependencies": {
     "debug": "^2.6.1",
-    "qs": "^6.4.0",
     "request": "^2.81.0",
-    "stormer": "^0.10.0"
+    "stormer": "^0.10.0",
+    "util": "^0.10.3"
   }
 }
