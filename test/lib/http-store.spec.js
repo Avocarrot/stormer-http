@@ -212,7 +212,7 @@ test('store.delete(model, query) should reject for not implemented', (assert) =>
   // Setup store
   const store = new HttpStore(request, {});
   store.define('items', model);
-  store.delete('items').catch(err => assert.equals(err.message, 'Store.prototype._delete(query) is not implemented'));
+  store.delete('items').catch(err => assert.equals(err.message, 'Store.prototype._delete() is not implemented'));
   sinon.restore();
 });
 
