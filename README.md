@@ -1,5 +1,5 @@
 # stormer-http
-Implementation of Stormer Store for HTTP clients
+Implementation of  [Stormer Store](https://github.com/avocarrot/stormer) for HTTP clients
 
 [![CircleCI](https://circleci.com/gh/Avocarrot/stormer-http/tree/master.svg?style=shield&circle-token=746c5c023e9387801481462f8e7316ad0c0a5e8c)](https://circleci.com/gh/Avocarrot/stormer-http/tree/master)
 
@@ -9,17 +9,18 @@ Implementation of Stormer Store for HTTP clients
 - [stormer ^v0.9.0 ](https://www.npmjs.com/package/stormer)
 - [request ^v2.81.0 ](https://www.npmjs.com/package/request)
 
+
 ## Available stores
 
-- [Http](https://github.com/Avocarrot/stormer/blob/master/README.md#http)
-- [Http HAL](https://github.com/Avocarrot/stormer/blob/master/README.md#http-hal)
+- [Http Store](https://github.com/Avocarrot/stormer/blob/master/README.md#http)
+- [Http HAL Store](https://github.com/Avocarrot/stormer/blob/master/README.md#http-hal)
 
 
 #### <a name="http"></a> Http Store
 
 ```js
 const HttpStore = require('stormer-http').HttpStore;
-const db = new HttpStore({
+const store = new HttpStore({
   timeout: 1000,
   baseUrl: 'http://endpoint.mock.com/v1',
 });
@@ -30,7 +31,7 @@ See http://stateless.co/hal_specification.html
 
 ```js
 const HttpHalStore = require('stormer-http').HttpHalStore;
-const db = new HttpHalStore({
+const store = new HttpHalStore({
   timeout: 1000,
   baseUrl: 'http://endpoint.mock.com/v1',
 });
