@@ -58,6 +58,14 @@ test('new HttpHalStore() should', (t) => {
     const store = new HttpHalStore({baseUrl: 'http://endpoint.mock.com/v1'});
     assert.ok(store instanceof HttpStore);
   });
+  t.test('throw an error for missing options', (assert) => {
+    assert.plan(1);
+    try {
+      new HttpHalStore();
+    } catch (err) {
+      assert.equals(err.message, 'options are required');
+    }
+  });
 });
 
 /**
