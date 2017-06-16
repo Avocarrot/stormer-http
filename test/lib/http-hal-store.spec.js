@@ -103,12 +103,7 @@ test('store.get(model, pk) should transform response', (assert) => {
       "id": "406b0752-e834-488e-8f8c-5f14c540cc06",
       "name": "Foo",
       "categories": {
-        "id": "ecadb749-8098-48e0-90bf-bb94a6d95cb2",
-        "_links": {
-          "self": {
-            "href": "/categories/ecadb749-8098-48e0-90bf-bb94a6d95cb2"
-          }
-        }
+        "id": "ecadb749-8098-48e0-90bf-bb94a6d95cb2"
       }
     });
   });
@@ -144,16 +139,43 @@ test('store.filter(model, query) should transform response', (assert) => {
               }
             ]
           }
+        },
+        {
+          "id": "c6040170-5297-11e7-b114-b2f933d5fe66",
+          "name": "Bar",
+          "_links": {
+            "self": {
+              "href": "/api_items/c6040170-5297-11e7-b114-b2f933d5fe66"
+            }
+          },
+          "_embedded": {
+            "categories": [
+              {
+                "id": "d17348fe-5297-11e7-b114-b2f933d5fe66",
+                "_links": {
+                  "self": {
+                    "href": "/categories/d17348fe-5297-11e7-b114-b2f933d5fe66"
+                  }
+                }
+              }
+            ]
+          }
         }
       ]
     },
     "_links": {
       "self": {
-        "href": "/api_items/47a2e55c-243e-46bc-aa27-02f3c0ca36c7/apps?page=0"
+        "href": "/api_items?page=0"
       },
       "next": {
-        "href": "/api_items/47a2e55c-243e-46bc-aa27-02f3c0ca36c7/apps?page=1"
+        "href": "/api_items?page=1"
       }
+    },
+    "page": {
+      "size": 1,
+      "totalElements": 2,
+      "totalPages": 1,
+      "number": 0
     }
   }
   nock('http://endpoint.mock.com/v1').get('/api_items?name=Foo').reply(200, rawResponse)
@@ -161,22 +183,34 @@ test('store.filter(model, query) should transform response', (assert) => {
   const store = generateStore('items', 'http://endpoint.mock.com/v1');
   // Assert correct `filter`
   store.filter('items', {name: 'Foo'}).then((res) => {
-    assert.deepEquals(res, [
-      {
-        "id": "406b0752-e834-488e-8f8c-5f14c540cc06",
-        "name": "Foo",
-        "categories": [
-          {
-            "id": "ecadb749-8098-48e0-90bf-bb94a6d95cb2",
-            "_links": {
-              "self": {
-                "href": "/categories/ecadb749-8098-48e0-90bf-bb94a6d95cb2"
-              }
+    assert.deepEquals(res, {
+      "api_items": [
+        {
+          "id": "406b0752-e834-488e-8f8c-5f14c540cc06",
+          "name": "Foo",
+          "categories": [
+            {
+              "id": "ecadb749-8098-48e0-90bf-bb94a6d95cb2"
             }
-          }
-        ]
+          ]
+        },
+        {
+          "id": "c6040170-5297-11e7-b114-b2f933d5fe66",
+          "name": "Bar",
+          "categories": [
+            {
+              "id": "d17348fe-5297-11e7-b114-b2f933d5fe66"
+            }
+          ]
+        }
+      ],
+      "page": {
+        "size": 1,
+        "totalElements": 2,
+        "totalPages": 1,
+        "number": 0
       }
-    ]);
+    });
   });
 });
 
