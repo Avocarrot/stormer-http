@@ -248,7 +248,7 @@ test('store.create(model, data) should transform response', (assert) => {
 /**
  * Tests: HttpHalStore.update(model, data)
  */
-
+//
 test('store.update(model, data) should transform response', (assert) => {
   assert.plan(1);
   const data = {
