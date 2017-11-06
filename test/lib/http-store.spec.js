@@ -124,13 +124,13 @@ test('store.get(model, pk) should reject with a NotFoundError if model is not fo
 test('store.filter(model, query) should resolve with error on failure', (assert) => {
   assert.plan(2);
   // Setup request stub
-  nock('http://endpoint.mock.com/v1').get('/api_items?name=Foo').reply(400)
+  nock('http://endpoint.mock.com/v1').get('/api_items?name=Foo').reply(400, { message: 'Invalid filter response'})
   // Setup store
   const store = generateStore('items', 'http://endpoint.mock.com/v1');
   // Assert correct `filter`
   store.filter('items', {name: 'Foo'}).catch((err) => {
     assert.ok(err instanceof HttpResponseError);
-    assert.equals(err.message, 'Invalid filter response');
+    assert.equals(err.body.message, 'Invalid filter response');
   });
 });
 
@@ -171,13 +171,13 @@ test('store.delete(model, query) should resolve with success code', (assert) => 
 test('store.delete(model, query) should reject with error on failure', (assert) => {
   assert.plan(2);
   // Setup request stub
-  nock('http://endpoint.mock.com/v1').delete('/api_items/b9d4621e-4abd-11e7-aa99-92ebcb67fe33').reply(400)
+  nock('http://endpoint.mock.com/v1').delete('/api_items/b9d4621e-4abd-11e7-aa99-92ebcb67fe33').reply(400, { message: 'Could not delete'})
   // Setup store
   const store = generateStore('items', 'http://endpoint.mock.com/v1');
   // Assert correct `delete`
   store.delete('items', {id: 'b9d4621e-4abd-11e7-aa99-92ebcb67fe33'}).catch((err) => {
     assert.ok(err instanceof HttpResponseError);
-    assert.equals(err.message, 'Invalid "delete" response');
+    assert.equals(err.body.message, 'Could not delete');
   });
 });
 
@@ -185,20 +185,20 @@ test('store.delete(model, query) should reject with error on failure', (assert) 
  * Tests: HttpStore.create(model, data)
  */
 
-test('store.create(model, data) should reject with error on `create` operation failure', (assert) => {
+test('store.create(model, data) should reject with error on `create` operation failure and propagate reported error', (assert) => {
   assert.plan(2);
   const data = {
     id: 'b9d4621e-4abd-11e7-aa99-92ebcb67fe33',
     name: 'Foo'
   };
   // Setup request stub
-  nock('http://endpoint.mock.com/v1').post('/api_items').reply(400);
+  nock('http://endpoint.mock.com/v1').post('/api_items').reply(400, { 'message': 'There was a problem' });
   // Setup store
   const store = generateStore('items', 'http://endpoint.mock.com/v1');
   // Assert correct `create`
   store.create('items', data).catch((err) => {
     assert.ok(err instanceof HttpResponseError);
-    assert.equals(err.message, 'Invalid "create" response');
+    assert.equals(err.body.message, 'There was a problem');
   });
 });
 
@@ -246,13 +246,13 @@ test('store.update(model, data) should reject with error on `update` operation f
     name: 'Foo'
   };
   // Setup request stub
-  nock('http://endpoint.mock.com/v1').put('/api_items/b9d4621e-4abd-11e7-aa99-92ebcb67fe33').reply(400);
+  nock('http://endpoint.mock.com/v1').put('/api_items/b9d4621e-4abd-11e7-aa99-92ebcb67fe33').reply(400, { message: 'There was a problem' });
   // Setup store
   const store = generateStore('items', 'http://endpoint.mock.com/v1');
   // Assert correct `update`
   store.update('items', data).catch((err) => {
     assert.ok(err instanceof HttpResponseError);
-    assert.equals(err.message, 'Invalid "update" response');
+    assert.equals(err.body.message, 'There was a problem');
   });
 });
 
