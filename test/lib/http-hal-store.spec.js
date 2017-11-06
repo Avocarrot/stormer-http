@@ -245,6 +245,40 @@ test('store.create(model, data) should transform response', (assert) => {
   });
 });
 
+test('store.create(model, data) should propagate and unwrap error response', (assert) => {
+  assert.plan(1);
+  const data = {
+    id: 'b9d4621e-4abd-11e7-aa99-92ebcb67fe33',
+    name: 'Foo'
+  };
+  const error = {
+    logref: 'DuplicateKeyException',
+    message: 'Field is not unique',
+    _embedded: {
+      errors: [
+        {
+          message: 'Nested error message'
+        }
+      ]
+    } 
+  };
+
+  nock('http://endpoint.mock.com/v1').post('/api_items').reply(400, error);
+  const store = generateStore('items', 'http://endpoint.mock.com/v1');
+
+  store.create('items', data).catch((res) => {
+    assert.deepEquals(res.body, {
+      logref: 'DuplicateKeyException',
+      message: 'Field is not unique',
+      errors: [
+        {
+          message: 'Nested error message'
+        }
+      ]
+    });
+  });
+});
+
 /**
  * Tests: HttpHalStore.update(model, data)
  */
