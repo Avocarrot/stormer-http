@@ -245,7 +245,7 @@ test('store.create(model, data) should transform response', (assert) => {
   });
 });
 
-test('store.create(model, data) should propagate and unwrap error response', (assert) => {
+test('store.create(model, data) should propagate and unwrap error response and status', (assert) => {
   assert.plan(1);
   const data = {
     id: 'b9d4621e-4abd-11e7-aa99-92ebcb67fe33',
@@ -267,14 +267,15 @@ test('store.create(model, data) should propagate and unwrap error response', (as
   const store = generateStore('items', 'http://endpoint.mock.com/v1');
 
   store.create('items', data).catch((res) => {
-    assert.deepEquals(res.body, {
+    assert.deepEquals(res, {
       logref: 'DuplicateKeyException',
       message: 'Field is not unique',
       errors: [
         {
           message: 'Nested error message'
         }
-      ]
+      ],
+      httpStatus: 400
     });
   });
 });
