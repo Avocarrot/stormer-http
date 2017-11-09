@@ -3,8 +3,6 @@ const nock = require('nock');
 const tapeNock = require('tape-nock')
 
 const stormer = require('stormer');
-const NotFoundError = stormer.errors.NotFoundError;
-const AlreadyExistsError = stormer.errors.AlreadyExistsError;
 const HttpResponseError = require('../../lib/errors/HttpResponseError');
 const HttpStore = require('../../lib/http-store');
 
@@ -104,16 +102,32 @@ test('store.get(model, pk) should resolve with an object', (assert) => {
   });
 });
 
-test('store.get(model, pk) should reject with a NotFoundError if model is not found', (assert) => {
-  assert.plan(2);
+test('store.get(model, pk) should reject with a HttpResponseError if model is not found', (assert) => {
+  assert.plan(1);
   // Setup request stub
   nock('http://endpoint.mock.com/v1').get('/api_items/b9d4621e-4abd-11e7-aa99-92ebcb67fe33').reply(404, {})
   // Setup store
   const store = generateStore('items', 'http://endpoint.mock.com/v1');
   // Assert correct `get`
   store.get('items', 'b9d4621e-4abd-11e7-aa99-92ebcb67fe33').catch((err) => {
-    assert.ok(err instanceof NotFoundError);
     assert.equals(err.message, 'Could not find "api_items" with primary key "b9d4621e-4abd-11e7-aa99-92ebcb67fe33"');
+  });
+});
+
+test('store.get(model, pk) should reject with error but include data and status code in response body', (assert) => {
+  assert.plan(1);
+  const response = {
+    id: 'b9d4621e-4abd-11e7-aa99-92ebcb67fe33',
+    name: 'Foo'
+  };
+  nock('http://endpoint.mock.com/v1').get('/api_items/b9d4621e-4abd-11e7-aa99-92ebcb67fe33').reply(403, response);
+  const store = generateStore('items', 'http://endpoint.mock.com/v1');
+  store.get('items', 'b9d4621e-4abd-11e7-aa99-92ebcb67fe33').catch((err) => {
+    assert.deepEquals(err, {
+      id: 'b9d4621e-4abd-11e7-aa99-92ebcb67fe33',
+      name: 'Foo',
+      httpStatus: 403
+    });
   });
 });
 
@@ -122,7 +136,7 @@ test('store.get(model, pk) should reject with a NotFoundError if model is not fo
  */
 
 test('store.filter(model, query) should resolve with error on failure', (assert) => {
-  assert.plan(2);
+  assert.plan(3);
   // Setup request stub
   nock('http://endpoint.mock.com/v1').get('/api_items?name=Foo').reply(400, { message: 'Invalid filter response'})
   // Setup store
@@ -130,7 +144,8 @@ test('store.filter(model, query) should resolve with error on failure', (assert)
   // Assert correct `filter`
   store.filter('items', {name: 'Foo'}).catch((err) => {
     assert.ok(err instanceof HttpResponseError);
-    assert.equals(err.body.message, 'Invalid filter response');
+    assert.equals(err.message, 'Invalid filter response');
+    assert.equals(err.httpStatus, 400);
   });
 });
 
@@ -169,7 +184,7 @@ test('store.delete(model, query) should resolve with success code', (assert) => 
 });
 
 test('store.delete(model, query) should reject with error on failure', (assert) => {
-  assert.plan(2);
+  assert.plan(3);
   // Setup request stub
   nock('http://endpoint.mock.com/v1').delete('/api_items/b9d4621e-4abd-11e7-aa99-92ebcb67fe33').reply(400, { message: 'Could not delete'})
   // Setup store
@@ -177,7 +192,8 @@ test('store.delete(model, query) should reject with error on failure', (assert) 
   // Assert correct `delete`
   store.delete('items', {id: 'b9d4621e-4abd-11e7-aa99-92ebcb67fe33'}).catch((err) => {
     assert.ok(err instanceof HttpResponseError);
-    assert.equals(err.body.message, 'Could not delete');
+    assert.equals(err.message, 'Could not delete');
+    assert.equals(err.httpStatus, 400);
   });
 });
 
@@ -186,7 +202,7 @@ test('store.delete(model, query) should reject with error on failure', (assert) 
  */
 
 test('store.create(model, data) should reject with error on `create` operation failure and propagate reported error', (assert) => {
-  assert.plan(2);
+  assert.plan(3);
   const data = {
     id: 'b9d4621e-4abd-11e7-aa99-92ebcb67fe33',
     name: 'Foo'
@@ -198,24 +214,8 @@ test('store.create(model, data) should reject with error on `create` operation f
   // Assert correct `create`
   store.create('items', data).catch((err) => {
     assert.ok(err instanceof HttpResponseError);
-    assert.equals(err.body.message, 'There was a problem');
-  });
-});
-
-test('store.create(model, data) should reject with `AlreadyExistsError` error on `create` operation if model already exists', (assert) => {
-  assert.plan(2);
-  const data = {
-    id: 'b9d4621e-4abd-11e7-aa99-92ebcb67fe33',
-    'name': 'Foo'
-  };
-  // Setup request stub
-  nock('http://endpoint.mock.com/v1').post('/api_items').reply(409);
-  // Setup store
-  const store = generateStore('items', 'http://endpoint.mock.com/v1');
-  // Assert correct `create`
-  store.create('items', data).catch((err) => {
-    assert.ok(err instanceof AlreadyExistsError);
-    assert.equals(err.message, 'Model for "b9d4621e-4abd-11e7-aa99-92ebcb67fe33" already exists');
+    assert.equals(err.message, 'There was a problem');
+    assert.equals(err.httpStatus, 400);
   });
 });
 
@@ -240,7 +240,7 @@ test('store.create(model, data) should resolve with correct data on `create` ope
  */
 
 test('store.update(model, data) should reject with error on `update` operation failure', (assert) => {
-  assert.plan(2);
+  assert.plan(3);
   const data = {
     id: 'b9d4621e-4abd-11e7-aa99-92ebcb67fe33',
     name: 'Foo'
@@ -252,7 +252,8 @@ test('store.update(model, data) should reject with error on `update` operation f
   // Assert correct `update`
   store.update('items', data).catch((err) => {
     assert.ok(err instanceof HttpResponseError);
-    assert.equals(err.body.message, 'There was a problem');
+    assert.equals(err.message, 'There was a problem');
+    assert.equals(err.httpStatus, 400);
   });
 });
 
